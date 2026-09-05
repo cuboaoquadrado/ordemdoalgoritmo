@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordem do Algoritmo — Cubo Mágico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #17161B;
+    --panel: #201F26;
+    --panel-2: #26252D;
+    --line: #35333D;
+    --text: #ECE8E3;
+    --muted: #948F9C;
+    --accent: #E5432B;
+    --accent-dim: #7A2B21;
+    --ok: #4FB477;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+  .wrap{
+    width: 100%;
+    max-width: 620px;
+  }
+  .site-header{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .site-header img{
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex: none;
+    background: var(--panel-2);
+  }
+  .site-header .logo-fallback{
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--panel-2);
+    border: 1px dashed var(--line);
+    flex: none;
+  }
+  .site-header .site-name{
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .cubelet-dot{
+    width: 10px; height:10px; border-radius: 2px;
+    background: var(--accent);
+    flex: none;
+  }
+  h1{
+    font-size: 28px;
+    line-height: 1.25;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  p.lede{
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0 0 32px;
+    max-width: 52ch;
+  }
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  label{
+    display:block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  textarea{
+    width: 100%;
+    resize: vertical;
+    min-height: 84px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 17px;
+    letter-spacing: 0.01em;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  textarea:focus{ border-color: var(--accent); }
+  textarea::placeholder{ color: #5b5763; }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .hint{
+    font-size: 12.5px;
+    color: #6f6b77;
+  }
+  button{
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 11px 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: transform .08s ease, background .15s ease;
+    flex: none;
+  }
+  button:hover{ background: #ff5540; }
+  button:active{ transform: scale(0.97); }
+
+  .result{
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    display: none;
+  }
+  .result.show{ display:block; }
+  .result.err .order-num{ color: var(--accent); }
+
+  .order-label{
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .order-num{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ok);
+    display:flex;
+    align-items:baseline;
+    gap: 12px;
+  }
+  .order-num small{
+    font-size: 16px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 400;
+  }
+  .explain{
+    margin-top: 14px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: #C7C3CC;
+  }
+  .explain b{ color: var(--text); }
+
+  .error-box{
+    margin-top: 22px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+    display:none;
+  }
+  .error-box.show{ display:block; }
+  .error-box .msg{
+    font-size: 14.5px;
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .examples{
+    margin-top: 22px;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ex-btn{
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .ex-btn:hover{ color: var(--text); border-color: #4a4753; background: var(--accent); }
+
+  footer{
+    margin-top: 26px;
+    color: #55515c;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  footer code{
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--panel-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #9d99a4;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="site-header">
+    <!-- Troque o src abaixo pelo caminho da logo no seu repositório, ex: "logo.png" -->
+    <img src="logo.png" alt="Logo Cubo² ao Quadrado" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo-fallback'}))">
+    <span class="site-name">Cubo² ao Quadrado</span>
+  </div>
+  <div class="eyebrow"><span class="cubelet-dot"></span>Cubo mágico</div>
+  <h1>Qual é a ordem do seu algoritmo?</h1>
+  <p class="lede">Digite uma sequência de movimentos na notação do cubo mágico. O app simula o cubo em 3D e calcula quantas vezes é preciso repetir o algoritmo até o cubo voltar exatamente ao estado inicial.</p>
+
+  <div class="card">
+    <label for="alg">Algoritmo</label>
+    <textarea id="alg" autofocus placeholder="Ex: R U R' U'">R U R' U'</textarea>
+    <div class="row">
+      <span class="hint">Aceita R U L D F B, fatias M E S, movimentos duplos (Rw, r...) e rotações x y z</span>
+      <button id="calc">Calcular</button>
+    </div>
+
+    <div class="result" id="result">
+      <div class="order-label">Ordem do algoritmo</div>
+      <div class="order-num"><span id="orderVal">—</span><small id="orderSuffix"></small></div>
+      <div class="explain" id="explain"></div>
+    </div>
+
+    <div class="error-box" id="errorBox">
+      <div class="msg" id="errorMsg"></div>
+    </div>
+
+    <div class="examples">
+      <button class="ex-btn" data-alg="R U R' U'">R U R' U' (sexy move)</button>
+      <button class="ex-btn" data-alg="R U R' U R U2 R'">Sune</button>
+      <button class="ex-btn" data-alg="R U R' U' R' F R2 U' R' U' R U R' F'">T-perm</button>
+      <button class="ex-btn" data-alg="M2 U M2 U2 M2 U M2">H-perm</button>
+      <button class="ex-btn" data-alg="r U R' U' r' F R F'">OLL com r</button>
+    </div>
+  </div>
+
+  <footer>
+    A "ordem" é o menor número de repetições <code>n</code> tal que aplicar o algoritmo <code>n</code> vezes seguidas devolve o cubo ao estado resolvido — independente de qual era esse estado inicial.
+  </footer>
+</div>
+
+<script>
+// ---------- Motor de simulação do cubo (validado contra algoritmos conhecidos) ----------
+function matXplus(x,y,z){ return [x, -z, y]; }
+function matXminus(x,y,z){ return [x, z, -y]; }
+function matYplus(x,y,z){ return [z, y, -x]; }
+function matYminus(x,y,z){ return [-z, y, x]; }
+function matZplus(x,y,z){ return [-y, x, z]; }
+function matZminus(x,y,z){ return [y, -x, z]; }
+
+const DIR_VEC = { U:[0,1,0], D:[0,-1,0], F:[0,0,1], B:[0,0,-1], R:[1,0,0], L:[-1,0,0] };
+const VEC_DIR = {};
+for (const k in DIR_VEC){ VEC_DIR[DIR_VEC[k].join(',')] = k; }
+
+function makeSolvedCube(){
+  const cubies = [];
+  for (let x=-1;x<=1;x++) for (let y=-1;y<=1;y++) for (let z=-1;z<=1;z++){
+    if (x===0 && y===0 && z===0) continue;
+    const stickers = {};
+    if (x===1) stickers.R = 'R'+x+','+y+','+z;
+    if (x===-1) stickers.L = 'L'+x+','+y+','+z;
+    if (y===1) stickers.U = 'U'+x+','+y+','+z;
+    if (y===-1) stickers.D = 'D'+x+','+y+','+z;
+    if (z===1) stickers.F = 'F'+x+','+y+','+z;
+    if (z===-1) stickers.B = 'B'+x+','+y+','+z;
+    cubies.push({x,y,z,stickers});
+  }
+  return cubies;
+}
+
+function isSolved(cubies){
+  for (const c of cubies){
+    for (const dir in c.stickers){
+      const expected = dir + c.x + ',' + c.y + ',' + c.z;
+      if (c.stickers[dir] !== expected) return false;
+    }
+  }
+  return true;
+}
+
+function applyMove(cubies, matFn, axis, layers, turns){
+  for (let t=0;t<turns;t++){
+    for (const c of cubies){
+      const coord = axis==='x'?c.x:axis==='y'?c.y:c.z;
+      if (!layers.includes(coord)) continue;
+      const [nx,ny,nz] = matFn(c.x,c.y,c.z);
+      c.x=nx; c.y=ny; c.z=nz;
+      const newStickers = {};
+      for (const dir in c.stickers){
+        const v = DIR_VEC[dir];
+        const [vx,vy,vz] = matFn(v[0],v[1],v[2]);
+        const nd = VEC_DIR[[vx,vy,vz].join(',')];
+        newStickers[nd] = c.stickers[dir];
+      }
+      c.stickers = newStickers;
+    }
+  }
+}
+
+const MOVES = {
+  U: {mat:matYminus, axis:'y', layers:[1]},
+  D: {mat:matYplus,  axis:'y', layers:[-1]},
+  L: {mat:matXplus,  axis:'x', layers:[-1]},
+  R: {mat:matXminus, axis:'x', layers:[1]},
+  F: {mat:matZminus, axis:'z', layers:[1]},
+  B: {mat:matZplus,  axis:'z', layers:[-1]},
+  M: {mat:matXplus,  axis:'x', layers:[0]},
+  E: {mat:matYplus,  axis:'y', layers:[0]},
+  S: {mat:matZminus, axis:'z', layers:[0]},
+  Uw:{mat:matYminus, axis:'y', layers:[1,0]},
+  Dw:{mat:matYplus,  axis:'y', layers:[-1,0]},
+  Lw:{mat:matXplus,  axis:'x', layers:[-1,0]},
+  Rw:{mat:matXminus, axis:'x', layers:[1,0]},
+  Fw:{mat:matZminus, axis:'z', layers:[1,0]},
+  Bw:{mat:matZplus,  axis:'z', layers:[-1,0]},
+  x: {mat:matXminus, axis:'x', layers:[-1,0,1]},
+  y: {mat:matYminus, axis:'y', layers:[-1,0,1]},
+  z: {mat:matZminus, axis:'z', layers:[-1,0,1]},
+};
+MOVES.u = MOVES.Uw; MOVES.d = MOVES.Dw; MOVES.l = MOVES.Lw;
+MOVES.r = MOVES.Rw; MOVES.f = MOVES.Fw; MOVES.b = MOVES.Bw;
+
+function expandRepeatGroups(str){
+  let s = str;
+  let guard = 0;
+  const re = /\(([^()]*)\)\s*(\d+)/;
+  let m;
+  while ((m = re.exec(s)) !== null && guard < 1000){
+    guard++;
+    const inner = m[1].trim();
+    const n = parseInt(m[2], 10);
+    const expanded = (' ' + inner + ' ').repeat(n);
+    s = s.slice(0, m.index) + ' ' + expanded + ' ' + s.slice(m.index + m[0].length);
+  }
+  return s.replace(/[()]/g, ' ');
+}
+
+function normalizeQuotes(str){
+  return str.replace(/[’′`´]/g, "'");
+}
+
+function parseAlgorithm(str){
+  const cleaned = expandRepeatGroups(normalizeQuotes(str));
+  const tokens = [];
+  const letters = 'UDLRFBMESrludfbxyz';
+  let i = 0;
+  const n = cleaned.length;
+  while (i < n){
+    const c = cleaned[i];
+    if (letters.indexOf(c) === -1){
+      if (/[A-Za-z]/.test(c)) throw new Error('Movimento desconhecido: "' + c + '"');
+      i++; continue;
+    }
+    let base = c;
+    i++;
+    if ('UDLRFBMES'.indexOf(base) !== -1 && cleaned[i] === 'w'){
+      base = base + 'w';
+      i++;
+    }
+    let mod = '';
+    while (i < n && (cleaned[i] === "'" || cleaned[i] === '2')){
+      mod += cleaned[i];
+      i++;
+    }
+    let turns = 1;
+    if (mod.includes('2')) turns = 2;
+    else if (mod.includes("'")) turns = 3;
+    if (!MOVES[base]){
+      throw new Error('Movimento desconhecido: "' + base + '"');
+    }
+    tokens.push({ base, turns });
+  }
+  return tokens;
+}
+
+function applyAlgorithm(cubies, tokens){
+  for (const tok of tokens){
+    const mv = MOVES[tok.base];
+    applyMove(cubies, mv.mat, mv.axis, mv.layers, tok.turns);
+  }
+}
+
+function algorithmOrder(algStr, maxIter){
+  const tokens = parseAlgorithm(algStr);
+  if (tokens.length===0) return { order: 1, tokens };
+  let cubies = makeSolvedCube();
+  for (let i=1;i<=maxIter;i++){
+    applyAlgorithm(cubies, tokens);
+    if (isSolved(cubies)) return { order: i, tokens };
+  }
+  return { order: null, tokens };
+}
+
+// ---------- UI ----------
+const algEl = document.getElementById('alg');
+const resultEl = document.getElementById('result');
+const errorBox = document.getElementById('errorBox');
+const errorMsg = document.getElementById('errorMsg');
+const orderVal = document.getElementById('orderVal');
+const orderSuffix = document.getElementById('orderSuffix');
+const explainEl = document.getElementById('explain');
+
+function moveCountLabel(n){
+  return n === 1 ? '1 movimento' : n + ' movimentos';
+}
+
+function run(){
+  resultEl.classList.remove('show');
+  errorBox.classList.remove('show');
+  const raw = algEl.value.trim();
+  if (!raw){
+    errorMsg.textContent = 'Digite um algoritmo primeiro.';
+    errorBox.classList.add('show');
+    return;
+  }
+  try {
+    const { order, tokens } = algorithmOrder(raw, 3000);
+    if (order === null){
+      errorMsg.textContent = 'Não foi possível determinar a ordem dentro do limite de repetições testado.';
+      errorBox.classList.add('show');
+      return;
+    }
+    orderVal.textContent = order;
+    orderSuffix.textContent = order === 1 ? 'vez' : 'vezes';
+    if (order === 1){
+      explainEl.innerHTML = 'Esse algoritmo já resolve de volta o cubo em <b>uma única aplicação</b> — ou seja, ele é equivalente a não fazer nada.';
+    } else {
+      explainEl.innerHTML = 'Com <b>' + moveCountLabel(tokens.length) + '</b> por repetição, é preciso aplicar esse algoritmo <b>' + order + ' vezes seguidas</b> (um total de ' + (order*tokens.length) + ' movimentos) para o cubo voltar ao estado em que começou.';
+    }
+    resultEl.classList.add('show');
+  } catch (e){
+    errorMsg.textContent = e.message + '. Use apenas letras válidas: U D L R F B, M E S, versões largas (Uw, r, l...) ou rotações x y z, seguidas opcionalmente de \' ou 2.';
+    errorBox.classList.add('show');
+  }
+}
+
+document.getElementById('calc').addEventListener('click', run);
+algEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run();
+});
+document.querySelectorAll('.ex-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    algEl.value = btn.dataset.alg;
+    run();
+  });
+});
+
+// calcula o exemplo padrão ao carregar
+run();
+</script>
+</body>
+</html>
